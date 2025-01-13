@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useAuthContext } from "..";
-import { Button, DestructiveButton } from "@/components/forms/Buttons";
-import { toast } from "react-toastify";
-import { H1 } from "@/components/ui/Headings";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +11,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+import { useAuthContext } from "..";
+import { Button, DestructiveButton } from "@/components/forms/Buttons";
+import { toast } from "react-toastify";
+import { H1 } from "@/components/ui/Headings";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -53,12 +54,61 @@ export function BoardgameDetails() {
 
   return (
     <>
-      <H1>{game.name}</H1>
+      <article>
+        <H1 className="font-bold text-center ">{game.name}</H1>
+        <img
+          width={350}
+          height={350}
+          className="mx-auto"
+          src={game.thumbnail}
+          alt={`Poster of "${game.name}"`}
+        />
+        <p>
+          <span className="font-bold">Description: </span>
+          {game.description}
+        </p>
+        <p>
+          <span className="font-bold">Alternate names: </span>
+          {game.alternateNames.join("; ")}
+        </p>
+        <p>
+          <span className="font-bold">Min Players: </span>
+          {game.numberOfPlayers.min}
+        </p>
+        <p>
+          <span className="font-bold">Recommended Players: </span>
+          {game.numberOfPlayers.recommended}
+        </p>
+        <p>
+          <span className="font-bold">Best Players: </span>
+          {game.numberOfPlayers.best}
+        </p>
+        <p>
+          <span className="font-bold">Max Players: </span>
+          {game.numberOfPlayers.max}
+        </p>
+        <p>
+          <span className="font-bold">Playtime: </span>
+          {game.playtime.avg}
+        </p>
+        <p>
+          <span className="font-bold">Minimum Age: </span>
+          {game.minAge}
+        </p>
+        <p>
+          <span className="font-bold">Average Rating: </span>
+          {game.average}
+        </p>
+        <p>
+          <span className="font-bold">Year Published: </span>
+          {game.yearpublished}
+        </p>
+      </article>
 
       {user && (
         <>
           <Link
-            to=""
+            to="edit"
             className="border border-stone-900 rounded px-4 py-2 justify-self-start bg-cyan-200 inline-block"
           >
             Edit

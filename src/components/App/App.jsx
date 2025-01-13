@@ -1,17 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer } from 'react-toastify';
 import { Nav } from "../Nav/Nav";
-import {
-  Auth,
-  AuthContextProvider,
-  BoardgameList,
-  BoardgameDetails,
-  RequireAuth,
-} from "@/features";
+import { Auth, AuthContextProvider, BoardgameList, BoardgameDetails, RequireAuth } from "@/features";
 
-import "react-toastify/dist/ReactToastify.css";
-import "./App.css";
+import 'react-toastify/dist/ReactToastify.css';
+import './App.css';
 import { AddBoardgame } from "@/features/Boardgames/AddBoardgame";
+import { EditGame } from "@/features/Boardgames/EditGame";
 
 export function App() {
   return (
@@ -19,23 +14,17 @@ export function App() {
       <AuthContextProvider>
         <Nav />
         <Routes>
-          <Route path="/" element={<h1>Homepage</h1>} />
+          <Route path="/" element={ <h1>Homepage</h1> } />
           <Route path="register" element={<Auth />} />
           <Route path="login" element={<Auth />} />
           <Route path="boardgames" element={<BoardgameList />} />
-          <Route
-            path="boardgames/add"
-            element={
-              <RequireAuth>
-                <AddBoardgame />
-              </RequireAuth>
-            }
-          />
+          <Route path="boardgames/add" element={<RequireAuth><AddBoardgame/></RequireAuth>} />
           <Route path="boardgames/:id" element={<BoardgameDetails />} />
-          <Route path="*" element={<h1>404</h1>} />
+          <Route path="boardgames/:id/edit" element={<RequireAuth><EditGame/></RequireAuth>} />
+          <Route path="*" element={ <h1>404</h1> } />
         </Routes>
       </AuthContextProvider>
       <ToastContainer />
     </BrowserRouter>
-  );
+  )
 }

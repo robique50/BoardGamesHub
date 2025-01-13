@@ -10,7 +10,7 @@ import { HiMiniMinusCircle, HiMiniPlusCircle } from "react-icons/hi2";
 import { array, number, object, string } from "yup";
 import { useAuthContext } from "../Auth/AuthContext";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const validationSchema = object({
   bggId: number().required().min(0),
@@ -44,10 +44,13 @@ const validationSchema = object({
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-export function AddBoardgame() {
+export function EditGame() {
+  const [boardgame, setBoardgame] = useState(null);
   const [numberOfAlternateNames, setNumberOfAlternateNames] = useState(1);
-  const { accessToken } = useAuthContext();
   const navigate = useNavigate();
+  const { id } = useParams();
+
+  const { accessToken } = useAuthContext();
 
   const {
     register,
@@ -55,26 +58,48 @@ export function AddBoardgame() {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(validationSchema),
+    defaultValues: async () =>
+      fetch(`${apiUrl}/boardgames/${id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setBoardgame(data);
+          setNumberOfAlternateNames(data.alternateNames.length);
+          return data;
+        }),
   });
 
-  async function handleAddBoardGame(boardgame) {
-    const newGame = await fetch(`${apiUrl}/boardgames`, {
-      method: "POST",
-      body: JSON.stringify(boardgame),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }).then((res) => res.json());
-    console.log(newGame);
-    toast.success(`The boardgame "${newGame.name}" was added successfully.`);
-    navigate("/boardgames?page=999999");
+  async function handleUpdateGame(updatedGame) {
+    try {
+      const response = await fetch(`${apiUrl}/boardgames/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(updatedGame),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update game");
+      }
+
+      toast.success(`"${data.name}" was updated successfully.`);
+      navigate(`/boardgames/${id}`);
+    } catch (error) {
+      toast.error(error.message || "Failed to update game");
+    }
+  }
+
+  if (!boardgame) {
+    return <strong>Loading ...</strong>;
   }
 
   return (
     <>
-      <H1>Add a New Boardgame</H1>
-      <Form onSubmit={handleSubmit(handleAddBoardGame)}>
+      <H1>Editing {boardgame.name}</H1>
+      <Form onSubmit={handleSubmit(handleUpdateGame)}>
         <Input
           labelText="BGG Id"
           type="number"
@@ -99,15 +124,27 @@ export function AddBoardgame() {
           errorMessage={errors.image?.message}
           {...register("image")}
         />
-        <div className="grid grid-cols-[150px,_1fr] gap-1 col-start-2 border border-slate-200 rounded">
+        <div className="grid grid-cols-[150px,_1fr,_1fr] gap-1 col-start-2 border border-slate-200 rounded">
           {new Array(numberOfAlternateNames).fill().map((_, i) => (
-            <Input
-              key={i}
-              labelText="Alternate Name"
-              type="text"
-              errorMessage={errors.alternateNames?.message}
-              {...register(`alternateNames.${i}`)}
-            />
+            <>
+              <Input
+                key={i}
+                labelText="Alternate Name"
+                type="text"
+                errorMessage={errors.alternateNames?.message}
+                {...register(`alternateNames.${i}`)}
+              />
+              <DestructiveButton
+                type="button"
+                onClick={() =>
+                  setNumberOfAlternateNames((oldValue) =>
+                    Math.max(1, oldValue - 1)
+                  )
+                }
+              >
+                <HiMiniMinusCircle />
+              </DestructiveButton>
+            </>
           ))}
           <div className="col-start-2 text-2xl">
             <PrimaryButton
@@ -117,15 +154,7 @@ export function AddBoardgame() {
               }
             >
               <HiMiniPlusCircle />
-            </PrimaryButton>{" "}
-            <DestructiveButton
-              type="button"
-              onClick={() =>
-                setNumberOfAlternateNames((oldValue) => oldValue - 1)
-              }
-            >
-              <HiMiniMinusCircle />
-            </DestructiveButton>
+            </PrimaryButton>
           </div>
         </div>
         <Textarea
@@ -133,7 +162,7 @@ export function AddBoardgame() {
           {...register("description")}
           errorMessage={errors.description?.message}
         />
-        <PrimaryButton className="col-start-2">Add</PrimaryButton>
+        <PrimaryButton className="col-start-2">Save Changes</PrimaryButton>
       </Form>
     </>
   );
